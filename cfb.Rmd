@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
   
   Being able to predict a teams success, and the importance of the variables leading to their success, is important because it allows coaches and players to determine which areas they need to focus on most.  Furthermore, in college football players are recruited to play for a college from high school.  Determining which predictors are most important will allow coaches to focus more of their attention on areas where these recruits shine, ultimately improving their teams chance for success in the future.
   
-  Using some of the machine learning techniques learned throughout the class, such as Linear Regression, Regularization, Random Forest, and Knn, we found an ensemble Root Mean Squared Error (RMSE) of 0.058 on the test set.  We were also able to determine that in both the linear regression model and the random forest model defensive statistics appeared to be more important than offensive statistics.
+  Using some of the machine learning techniques learned throughout the class, such as Linear Regression, Regularization, Random Forest, and Knn, we found an ensemble Root Mean Squared Error (RMSE) of 0.086 on the test set.  We were also able to determine that in both the linear regression model and the random forest model defensive statistics appeared to be more important than offensive statistics.
   
 # Introduction
 
@@ -562,31 +562,20 @@ As you can see, our ensemble performs nearly as well as linear regression while 
 As mentioned above, we will be using the ensemble model to make our final predictions on the test set.  We will use the best tuning parameters obtained from tuning on our training set.  Below we perform these techniques, first fitting each model and getting that particular models predictions, and then using an equal weight average for the final prediction.
 
 ```{r ensemble_test_set}
-#fit linear regression model on test set
-fit_lm_test <- train(x_test, y_test, method = "lm", tuneGrid = data.frame("intercept" = 0))
 # predict win percentage based on lm
-pred_lm_test <- predict(fit_lm_test)
+pred_lm_test <- predict(fit_lm, x_test)
 
 
-#fit knn on test set with best k
-fit_knn_test <- train(x_test, y_test, method = "knn", tuneGrid = data.frame("k" = k_best))
 #predict win percentage based on knn
-pred_knn_test <- predict(fit_knn_test)
+pred_knn_test <- predict(fit_knn, x_test)
 
 
-# fit rf on test set with best mtry
-fit_rf_test <- train(x_test, y_test, method = "rf", tuneGrid = data.frame("mtry" = mtry_best),
-                  nodesize = 2, ntree = 2000)
 #predict win percentage based on rf
-pred_rf_test <- predict(fit_rf_test)
+pred_rf_test <- predict(fit_rf, x_test)
 
 
-# fit regularized model on test set with best alpha and lambda
-#selecting the best alpha and lambda parameters from th model
-grid <- expand.grid(alpha = a_best, lambda = l_best)
-fit_reg_test <- train(x_test, y_test, method = "glmnet", preProc = c("center", "scale", "nzv", "zv"), tuneGrid = grid)
 #predict win percentage bsed on regularization
-pred_reg_test <- predict(fit_reg_test)
+pred_reg_test <- predict(fit_reg, x_test)
 
 
 #final ensemble prediction for win percentage
@@ -604,12 +593,12 @@ df %>% ggplot(aes(x = y_test, y = pred_ensemble_test)) + geom_point() + geom_abl
 
 #show table of results
 kable(RMSE_tab_test, caption = "Final Model RMSE (Test Set)", booktabs = T, linesep = "", digits = 3) %>%
-  kable_styling(latex_options = c("striped", "hold_position"))
+  kable_styling(latex_options = "striped")
 ```
 
 ## Conclusion
 
-Overall, we see that our ensemble model performed quite well, achieving and RMSE of 0.058.  We were able to do better than our goal of 0.077 which corressponded to predicting a win percentage within 1 game in a 13 game season.  Additionally, by examining the importance of predictors within the different algorithm, we were able determine that defensive predictors appear to be slightly more significant than offensive predictors.  We saw this in both the linear regression model where 8 of the top 10 predictors were defensive statistics, and in the random forest model where 6 of the top 10 predictors were defensive statistics.  This would be important to know for coaches, because they could put more of an emphasis on recruiting players who are highly rated on defense.  Additionally, they could focus on defense more in practice.
+Overall, we see that our ensemble model performed quite well, achieving and RMSE of 0.086.  We were unable to do better than our goal of 0.077 which corressponded to predicting a win percentage within 1 game in a 13 game season.  Additionally, by examining the importance of predictors within the different algorithm, we were able determine that defensive predictors appear to be slightly more significant than offensive predictors.  We saw this in both the linear regression model where 8 of the top 10 predictors were defensive statistics, and in the random forest model where 6 of the top 10 predictors were defensive statistics.  This would be important to know for coaches, because they could put more of an emphasis on recruiting players who are highly rated on defense.  Additionally, they could focus on defense more in practice.
 
 Future work includes scraping more data from the NCAA website so that we have more observations to train and test against.  This data would be from previous seasons, so it would be interesting to see if there is a time effect on the model and if the importance of offensive or defensive predictors change throughout time. Also, future work could explore models such as quantile-quantile regression which have been suggested to be more robust to outliers in smaller datasets.
 
@@ -634,11 +623,3 @@ Future work includes scraping more data from the NCAA website so that we have mo
 9) Subramanian, Dhilip. “A Simple Introduction to K-Nearest Neighbors Algorithm.” Medium, Towards Data Science, 3 Jan. 2020, towardsdatascience.com/a-simple-introduction-to-k-nearest-neighbors-algorithm-b3519ed98e.
 
 10) Zhang, Zhongheng. “Too Much Covariates in a Multivariable Model May Cause the Problem of Overfitting.” Journal of Thoracic Disease, Pioneer Bioscience Publishing Company, Sept. 2014, www.ncbi.nlm.nih.gov/pmc/articles/PMC4178069/. 
-
-
-
-
-
-
-
-

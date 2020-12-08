@@ -424,31 +424,20 @@ kable(RMSE_tab, caption = "Model RMSEs (Training)", booktabs = T, linesep = "", 
 
 
 ##############FINAL MODEL PREDICTING WIN PERCENTAGE ON TEST SET USING ENSEMBLE###########
-#fit linear regression model on test set
-fit_lm_test <- train(x_test, y_test, method = "lm", tuneGrid = data.frame("intercept" = 0))
 # predict win percentage based on lm
-pred_lm_test <- predict(fit_lm_test)
+pred_lm_test <- predict(fit_lm, x_test)
 
 
-#fit knn on test set with best k
-fit_knn_test <- train(x_test, y_test, method = "knn", tuneGrid = data.frame("k" = k_best))
 #predict win percentage based on knn
-pred_knn_test <- predict(fit_knn_test)
+pred_knn_test <- predict(fit_knn, x_test)
 
 
-# fit rf on test set with best mtry
-fit_rf_test <- train(x_test, y_test, method = "rf", tuneGrid = data.frame("mtry" = mtry_best),
-                     nodesize = 2, ntree = 2000)
 #predict win percentage based on rf
-pred_rf_test <- predict(fit_rf_test)
+pred_rf_test <- predict(fit_rf, x_test)
 
 
-# fit regularized model on test set with best alpha and lambda
-#selecting the best alpha and lambda parameters from th model
-grid <- expand.grid(alpha = a_best, lambda = l_best)
-fit_reg_test <- train(x_test, y_test, method = "glmnet", preProc = c("center", "scale", "nzv", "zv"), tuneGrid = grid)
 #predict win percentage bsed on regularization
-pred_reg_test <- predict(fit_reg_test)
+pred_reg_test <- predict(fit_reg, x_test)
 
 
 #final ensemble prediction for win percentage
